@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SentimenUMKM — Analisis Sentimen Ulasan Produk{% endblock %}</title>
+    <meta name="description" content="Platform analisis sentimen ulasan produk e-commerce berbasis AI menggunakan Naive Bayes & SVM untuk UMKM Indonesia.">
+
+    <!-- Google Fonts: Inter + Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS Utama -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <!-- Inline: Prevent FOUC -->
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- ================================================
+         SIDEBAR
+    ================================================ -->
+    <aside class="sidebar" id="sidebar">
+
+        <!-- Brand Logo -->
+        <div class="sidebar-brand">
+            <div class="brand-logo">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="SentimenUMKM Logo">
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">Sentimen<span class="brand-accent">UMKM</span></span>
+            </div>
+        </div>
+
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">MENU UTAMA</div>
+
+            <a href="/" class="sidebar-link {% if request.path == '/' %}active{% endif %}" id="nav-beranda">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-6 0a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1m-6 0h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="link-text">Beranda</span>
+            </a>
+
+            <a href="/analisis" class="sidebar-link {% if request.path == '/analisis' %}active{% endif %}" id="nav-analisis">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <span class="link-text">Analisis</span>
+                <span class="link-badge">AI</span>
+            </a>
+
+            <a href="/dashboard" class="sidebar-link {% if request.path == '/dashboard' %}active{% endif %}" id="nav-dashboard">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </span>
+                <span class="link-text">Dashboard</span>
+            </a>
+
+            <a href="/rekomendasi" class="sidebar-link {% if request.path == '/rekomendasi' %}active{% endif %}" id="nav-rekomendasi">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="link-text">Rekomendasi</span>
+            </a>
+
+            <a href="/perbandingan" class="sidebar-link {% if request.path == '/perbandingan' %}active{% endif %}" id="nav-perbandingan">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="link-text">Perbandingan Model</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <div class="nav-section-label">SISTEM</div>
+
+            <div class="sidebar-link sidebar-link-static">
+                <span class="link-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="link-text">Status Model</span>
+                <span class="status-dot status-online"></span>
+            </div>
+
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="sys-card">
+                <div class="sys-avatar">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                        <path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="sys-info">
+                    <div class="sys-name">Flask Server</div>
+                    <div class="sys-status">
+                        <span class="status-dot status-online"></span> Aktif &amp; Berjalan
+                    </div>
+                </div>
+                <button class="theme-btn" id="theme-toggle" aria-label="Toggle Theme" title="Ganti Tema">
+                    <svg class="sun-icon" viewBox="0 0 24 24" width="16" height="16" fill="none">
+                        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24" width="16" height="16" fill="none">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ================================================
+         MAIN CONTENT AREA
+    ================================================ -->
+    <div class="main-area">
+
+        <!-- Top Header Bar -->
+        <header class="main-header">
+            <div class="header-left">
+                <div class="header-breadcrumb">
+                    <span class="breadcrumb-root">SentimenUMKM</span>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span class="breadcrumb-current">{% block breadcrumb %}Beranda{% endblock %}</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-tag">
+                    <span class="tag-dot"></span>
+                    <span>NB + SVM Ready</span>
+                </div>
+                <div class="header-date" id="header-clock"></div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div><!-- /.main-area -->
+
+</div><!-- /.app-shell -->
+
+<!-- Loading Overlay -->
+<div id="loading" class="loading-overlay" style="display:none;">
+    <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <span>Memproses sentimen ulasan...</span>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
+    // Clock
+    (function() {
+        function updateClock() {
+            var el = document.getElementById('header-clock');
+            if (!el) return;
+            var now = new Date();
+            el.textContent = now.toLocaleString('id-ID', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+        updateClock();
+        setInterval(updateClock, 30000);
+    })();
+
+
+</script>
+
+</body>
+</html>

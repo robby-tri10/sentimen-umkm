@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% block title %}Analisis Sentimen — SentimenUMKM{% endblock %}
+{% block breadcrumb %}Analisis{% endblock %}
+
+{% block content %}
+<div class="page-header anim-up">
+    <h1 class="page-title">Analisis Sentimen Ulasan</h1>
+    <p class="page-sub">Masukkan ulasan pelanggan Anda — sistem AI akan otomatis menentukan apakah ulasan tersebut <strong style="color:var(--success)">Positif</strong>, <strong style="color:var(--danger)">Negatif</strong>, atau <strong style="color:var(--warning)">Netral</strong></p>
+</div>
+
+<div class="card anim-up" style="animation-delay:0.05s;">
+    <!-- Tab Selector -->
+    <div class="tab-row">
+        <button class="tab active" id="tab-btn-teks" onclick="switchTab(this,'teks')">
+            Input Teks Tunggal
+        </button>
+        <button class="tab" id="tab-btn-csv" onclick="switchTab(this,'csv')">
+            Upload File CSV
+        </button>
+    </div>
+
+    <!-- Algorithm Selection -->
+    <div class="algo-selection-wrapper">
+        <div>
+            <label class="input-label" for="selected-algo" style="margin-bottom: 2px;">Pilih Metode Analisis AI:</label>
+            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Pilih salah satu — keduanya canggih, SVM sedikit lebih akurat</p>
+        </div>
+        <select id="selected-algo" name="selected-algo" class="algo-select">
+            <option value="svm" selected>🎯 SVM — Lebih Akurat (94.4%)</option>
+            <option value="nb">⚡ Naive Bayes — Lebih Cepat (94.0%)</option>
+        </select>
+    </div>
+
+    <!-- TAB: TEKS TUNGGAL -->
+    <div id="tab-teks">
+        <label class="input-label" for="input-teks">Tulis atau Tempel Ulasan Pelanggan di Sini</label>
+        <textarea
+            id="input-teks"
+            class="textarea-input"
+            placeholder="Contoh: Barangnya bagus sekali, pengiriman cepat dan penjual ramah..."
+            rows="5"
+        ></textarea>
+
+        <!-- Quick Examples -->
+        <div class="quick-examples">
+            <span class="quick-label">Contoh Cepat:</span>
+            <button class="quick-btn" onclick="isiContohTeks('positif')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--success);"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg> Positif
+            </button>
+            <button class="quick-btn" onclick="isiContohTeks('negatif')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--danger);"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2M9 9h.01M15 9h.01"/></svg> Negatif
+            </button>
+            <button class="quick-btn" onclick="isiContohTeks('netral')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning);"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg> Netral
+            </button>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-primary" onclick="analisTeks()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                    <path d="M21 21l-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Analisis Ulasan</span>
+            </button>
+            <button class="btn-secondary" onclick="resetTeks()">Reset</button>
+        </div>
+    </div>
+
+    <!-- TAB: UPLOAD CSV -->
+    <div id="tab-csv" style="display:none;">
+
+        <!-- Panduan Format CSV -->
+        <div class="csv-guide" id="csv-guide-panel">
+            <div class="csv-guide-header" onclick="toggleCsvGuide()">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>📋 Panduan Format File CSV</span>
+                <span id="csv-guide-arrow" class="csv-guide-header-arrow">▼</span>
+            </div>
+            <div class="csv-guide-content" id="csv-guide-content">
+                <div class="csv-guide-body">
+                    <div class="csv-guide-grid">
+                        <div class="csv-step">
+                            <div class="csv-step-num">1</div>
+                            <div class="csv-step-text">
+                                <div class="csv-step-title">Nama Kolom Didukung</div>
+                                <div class="csv-step-desc">Wajib salah satu dari kata kunci ini:</div>
+                                <div class="csv-tags">
+                                    <span class="csv-tag">ulasan</span>
+                                    <span class="csv-tag">review</span>
+                                    <span class="csv-tag">teks</span>
+                                    <span class="csv-tag">text</span>
+                                    <span class="csv-tag">komentar</span>
+                                    <span class="csv-tag">comment</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="csv-step">
+                            <div class="csv-step-num">2</div>
+                            <div class="csv-step-text">
+                                <div class="csv-step-title">Contoh Data</div>
+                                <div class="csv-step-desc">Satu kolom teks ulasan per baris:</div>
+                                <div class="table-responsive" style="margin-top:6px;">
+                                    <table class="csv-preview">
+                                        <thead><tr><th>ulasan</th></tr></thead>
+                                        <tbody>
+                                            <tr><td>Barang mantap, cepat sampai!</td></tr>
+                                            <tr><td>Packaging sobek, produk rusak.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="csv-step">
+                            <div class="csv-step-num">3</div>
+                            <div class="csv-step-text">
+                                <div class="csv-step-title">Spesifikasi File</div>
+                                <ul class="csv-list">
+                                    <li>Format: <strong>.csv</strong></li>
+                                    <li>Encoding: <strong>UTF-8</strong></li>
+                                    <li>Kapasitas: <strong>50.000 baris</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="csv-alert-tip">
+                        💡 <strong>Kolom tidak cocok?</strong> Ganti nama header kolom ulasan menjadi <code>ulasan</code> menggunakan Excel atau Google Sheets.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Box -->
+        <div class="upload-box" id="upload-box">
+            <span class="upload-icon">📂</span>
+            <div class="upload-label">Seret & Lepas File CSV di Sini</div>
+            <div class="upload-hint">Atau klik untuk memilih file · Mendukung hingga 50.000 baris</div>
+            <input type="file" id="file-input" accept=".csv" style="display:none;" onchange="handleFileSelect(this)">
+        </div>
+
+        <!-- CSV Preview -->
+        <div id="csv-preview-area" class="card card-sm" style="display:none; margin-top:14px; border-style:dashed;">
+            <div class="preview-title">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" style="color:var(--accent)"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/></svg>
+                <span>Pratinjau Data CSV</span>
+            </div>
+            <div class="table-responsive">
+                <table class="csv-preview" id="preview-table">
+                    <thead><tr id="preview-headers"></tr></thead>
+                    <tbody id="preview-rows"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="file-info" class="file-info" style="display:none;"></div>
+
+        <div class="btn-row">
+            <button class="btn-primary" id="btn-upload" onclick="uploadCSV()" disabled>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                    <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Upload &amp; Analisis CSV</span>
+            </button>
+            <button class="btn-secondary" onclick="resetCSV()">Reset File</button>
+        </div>
+        <p id="csv-upload-hint" style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+            ☝️ Pilih file CSV terlebih dahulu untuk mengaktifkan tombol analisis.
+        </p>
+    </div>
+</div>
+
+<!-- HASIL ANALISIS TEKS TUNGGAL -->
+<div id="hasil-teks" class="anim-up" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"/></svg>
+                </div>
+                Hasil Klasifikasi Sentimen
+            </div>
+        </div>
+
+        <div class="compare-grid">
+            <!-- Naive Bayes -->
+            <div class="compare-card" id="card-nb">
+                <div class="compare-head">
+                    <span>Naive Bayes</span>
+                </div>
+                <div class="compare-body">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                        <span class="result-label">Sentimen</span>
+                        <span class="badge" id="nb-badge">—</span>
+                    </div>
+                    <!-- Radial Progress -->
+                    <div style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;">
+                        <div style="position:relative; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                            <svg class="radial-svg" width="110" height="110" viewBox="0 0 110 110">
+                                <circle class="radial-track" cx="55" cy="55" r="46"/>
+                                <circle class="radial-fill" id="nb-circle" cx="55" cy="55" r="46"
+                                    stroke="#818cf8"
+                                    stroke-dasharray="289"
+                                    stroke-dashoffset="289"/>
+                            </svg>
+                            <div style="position:absolute; text-align:center;">
+                                <div class="radial-pct" id="nb-pct">0%</div>
+                                <div class="radial-label">Keyakinan</div>
+                            </div>
+                        </div>
+                        <div id="nb-conf" style="font-size:11px; color:var(--text-secondary); font-weight:500;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SVM -->
+            <div class="compare-card winner" id="card-svm">
+                <div class="compare-head">
+                    <span>Support Vector Machine</span>
+                    <span class="best-tag">Model Utama</span>
+                </div>
+                <div class="compare-body">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                        <span class="result-label">Sentimen</span>
+                        <span class="badge" id="svm-badge">—</span>
+                    </div>
+                    <!-- Radial Progress -->
+                    <div style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;">
+                        <div style="position:relative; width:110px; height:110px; display:flex; align-items:center; justify-content:center;">
+                            <svg class="radial-svg" width="110" height="110" viewBox="0 0 110 110">
+                                <circle class="radial-track" cx="55" cy="55" r="46"/>
+                                <circle class="radial-fill" id="svm-circle" cx="55" cy="55" r="46"
+                                    stroke="url(#svmGrad)"
+                                    stroke-dasharray="289"
+                                    stroke-dashoffset="289"/>
+                                <defs>
+                                    <linearGradient id="svmGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#3b82f6"/>
+                                        <stop offset="100%" stop-color="#8b5cf6"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div style="position:absolute; text-align:center;">
+                                <div class="radial-pct" id="svm-pct">0%</div>
+                                <div class="radial-label">Keyakinan</div>
+                            </div>
+                        </div>
+                        <div id="svm-conf" style="font-size:11px; color:var(--text-secondary); font-weight:500;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Highlighted text -->
+        <div class="highlight-box" id="highlight-wrapper" style="display:none;">
+            <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary); margin-bottom:8px;">Teks Hasil Pra-pemrosesan</div>
+            <p id="clean-text-highlighted"></p>
+        </div>
+    </div>
+
+    <!-- Rekomendasi (hanya jika negatif) -->
+    <div id="reko-section" class="card" style="display:none;">
+        <div class="card-header">
+            <div class="card-title" style="color:var(--danger);">
+                <div class="card-title-icon" style="background:var(--danger-light); color:var(--danger);">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                Rekomendasi Perbaikan
+            </div>
+            <span class="card-subtitle">Berdasarkan kata kunci ulasan negatif</span>
+        </div>
+        <div class="reko-accordion" id="reko-list"></div>
+    </div>
+</div>
+
+<!-- HASIL UPLOAD CSV -->
+<div id="hasil-csv" class="anim-up" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                Ringkasan Analisis Batch CSV
+            </div>
+        </div>
+        <!-- Side-by-side Summary Grid -->
+        <div class="csv-summary-compare-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 18px;">
+            <!-- Naive Bayes Summary -->
+            <div class="summary-col-card">
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Naive Bayes</span>
+                    <span class="badge" id="csv-nb-badge" style="font-size: 9px; background: rgba(59, 130, 246, 0.1); color: var(--accent);">Baseline</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink:0;"></span> Positif
+                        </span>
+                        <span class="summary-row-value" id="csv-nb-pos">0</span>
+                    </div>
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink:0;"></span> Negatif
+                        </span>
+                        <span class="summary-row-value" id="csv-nb-neg">0</span>
+                    </div>
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--warning); flex-shrink:0;"></span> Netral
+                        </span>
+                        <span class="summary-row-value" id="csv-nb-net">0</span>
+                    </div>
+                </div>
+            </div>
+            <!-- SVM Summary -->
+            <div class="summary-col-card">
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Support Vector Machine</span>
+                    <span class="badge badge-positif" id="csv-svm-badge" style="font-size: 9px;">Model Utama</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink:0;"></span> Positif
+                        </span>
+                        <span class="summary-row-value" id="csv-svm-pos">0</span>
+                    </div>
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink:0;"></span> Negatif
+                        </span>
+                        <span class="summary-row-value" id="csv-svm-neg">0</span>
+                    </div>
+                    <div class="summary-row-item">
+                        <span class="summary-row-label">
+                            <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--warning); flex-shrink:0;"></span> Netral
+                        </span>
+                        <span class="summary-row-value" id="csv-svm-net">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="info-box">
+            <span class="info-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--accent);"><path d="M12 20V10m-4 10V14m8 6V6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>File CSV berhasil diproses! Lihat grafik lengkap dan data ulasan detail di Dashboard.</span>
+        </div>
+        <div class="btn-row">
+            <a href="/dashboard" class="btn-primary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+                <span>Lihat Dashboard Analisis</span>
+            </a>
+            <a href="/rekomendasi" class="btn-secondary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Lihat Rekomendasi</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

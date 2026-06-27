@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+{% block title %}Perbandingan Model — SentimenUMKM{% endblock %}
+{% block breadcrumb %}Perbandingan Model{% endblock %}
+
+{% block content %}
+<div class="page-header anim-up">
+    <h1 class="page-title">Perbandingan Performa Model</h1>
+    <p class="page-sub">Evaluasi algoritma Naive Bayes vs Support Vector Machine pada dataset PRDECT-ID</p>
+</div>
+
+{% if metrics %}
+{% set selected_algo = hasil_csv.selected_algo if (hasil_csv and hasil_csv.selected_algo) else 'svm' %}
+{% set is_nb = selected_algo == 'nb' %}
+
+{% if hasil_csv and hasil_csv.perbandingan_csv %}
+<!-- ============================================================ -->
+<!-- PERBANDINGAN DINAMIS dari CSV yang diupload -->
+<!-- ============================================================ -->
+<div class="card anim-up" style="animation-delay:0.05s; border-color:var(--accent); box-shadow: 0 0 14px var(--accent-glow);">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-title-icon" style="background:var(--warning-light); color:var(--warning);">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            Perbandingan Prediksi — CSV yang Diupload
+        </div>
+        <span class="card-subtitle">Berubah otomatis setiap kali CSV baru dianalisis</span>
+    </div>
+
+    {% set perb = hasil_csv.perbandingan_csv %}
+
+    <!-- Stat kesepakatan -->
+    <div class="stat-grid" style="margin-bottom:18px;">
+        <div class="stat-card stat-positif">
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Prediksi Sama</div>
+                <div class="stat-val">{{ perb.sama }}</div>
+                <div class="stat-pct">{{ perb.persen_sama }}% dari {{ perb.total }} ulasan</div>
+            </div>
+        </div>
+        <div class="stat-card stat-negatif">
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Prediksi Berbeda</div>
+                <div class="stat-val">{{ perb.berbeda }}</div>
+                <div class="stat-pct">{{ perb.persen_berbeda }}% dari {{ perb.total }} ulasan</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-top:2px solid var(--accent);">
+            <div class="stat-icon" style="background:var(--accent-light); color:var(--accent);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                    <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Total Dianalisis</div>
+                <div class="stat-val" style="color:var(--accent);">{{ perb.total }}</div>
+                <div class="stat-pct">Ulasan dari CSV</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress bar kesepakatan -->
+    <div style="margin-bottom:18px;">
+        <div style="font-size:11px; color:var(--text-secondary); margin-bottom:6px; font-weight:600;">PROPORSI KESEPAKATAN VS KETIDAKSESUAIAN</div>
+        <div style="height:24px; background:var(--bg-input); border-radius:12px; overflow:hidden; display:flex;">
+            <div style="height:100%; background:linear-gradient(90deg,#10b981,#34d399); width:{{ perb.persen_sama }}%; display:flex; align-items:center; justify-content:center; transition:width 0.6s ease;">
+                <span style="font-size:11px; font-weight:700; color:#fff;">{{ perb.persen_sama }}%</span>
+            </div>
+            <div style="height:100%; background:linear-gradient(90deg,#ef4444,#fb7185); flex:1; display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:11px; font-weight:700; color:#fff;">{{ perb.persen_berbeda }}%</span>
+            </div>
+        </div>
+        <div style="display:flex; gap:16px; margin-top:6px;">
+            <span style="font-size:11px; color:var(--success);">■ Prediksi sama (NB = SVM)</span>
+            <span style="font-size:11px; color:var(--danger);">■ Prediksi berbeda (NB ≠ SVM)</span>
+        </div>
+    </div>
+
+    <!-- Grafik distribusi dua model dari CSV -->
+    <div class="compare-grid" style="margin-bottom:18px;">
+        <div style="background:var(--bg-input); border-radius:10px; padding:14px;">
+            <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">Distribusi Naive Bayes</div>
+            <div style="height:160px; position:relative;"><canvas id="chartNBCsv"></canvas></div>
+        </div>
+        <div style="background:var(--bg-input); border-radius:10px; padding:14px;">
+            <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">Distribusi SVM</div>
+            <div style="height:160px; position:relative;"><canvas id="chartSVMCsv"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Tabel ketidaksesuaian -->
+    {% if perb.ketidaksesuaian %}
+    <div style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;">Detail Ketidaksesuaian Prediksi</div>
+        <div class="table-responsive">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Naive Bayes</th>
+                        <th>SVM</th>
+                        <th style="text-align:center;">Jumlah</th>
+                        <th style="text-align:center;">Persentase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in perb.ketidaksesuaian %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if item.nb == 'Positif' %}badge-positif{% elif item.nb == 'Negatif' %}badge-negatif{% else %}badge-netral{% endif %}">{{ item.nb }}</span>
+                        </td>
+                        <td>
+                            <span class="badge {% if item.svm == 'Positif' %}badge-positif{% elif item.svm == 'Negatif' %}badge-negatif{% else %}badge-netral{% endif %}">{{ item.svm }}</span>
+                        </td>
+                        <td style="text-align:center; font-weight:600;">{{ item.jumlah }}</td>
+                        <td style="text-align:center; color:var(--text-secondary);">{{ item.persen }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="info-box">
+        <span class="info-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--accent);"><path d="M9 18h6m-6 3h6m-3-15a6 6 0 0 0-6 6c0 2.5 2 4.5 3.5 6h5C14 14.5 16 12.5 16 10a6 6 0 0 0-6-6z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span>Ketidaksesuaian prediksi adalah hal yang wajar karena kedua model menggunakan pendekatan matematika berbeda. Sistem mengikuti hasil prediksi <strong>{{ 'Naive Bayes' if is_nb else 'SVM' }}</strong> sebagai model utama yang Anda pilih.</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- Dataset Info Cards -->
+<div class="stat-grid anim-up" style="animation-delay:0.1s;">
+    <div class="stat-card" style="border-top:2px solid var(--accent);">
+        <div class="stat-icon" style="background:var(--accent-light); color:var(--accent);">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 11h6M9 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Total Dataset</div>
+            <div class="stat-val" style="color:var(--accent);">{{ metrics.jumlah_data.total }}</div>
+            <div class="stat-pct">Ulasan PRDECT-ID</div>
+        </div>
+    </div>
+    <div class="stat-card stat-positif">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Data Training (80%)</div>
+            <div class="stat-val">{{ metrics.jumlah_data.training }}</div>
+            <div class="stat-pct">Proses pembelajaran model</div>
+        </div>
+    </div>
+    <div class="stat-card stat-negatif">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 0 0 1.946-.806 3.42 3.42 0 0 1 4.438 0 3.42 3.42 0 0 0 1.946.806 3.42 3.42 0 0 1 3.138 3.138 3.42 3.42 0 0 0 .806 1.946 3.42 3.42 0 0 1 0 4.438 3.42 3.42 0 0 0-.806 1.946 3.42 3.42 0 0 1-3.138 3.138 3.42 3.42 0 0 0-1.946.806 3.42 3.42 0 0 1-4.438 0 3.42 3.42 0 0 0-1.946-.806 3.42 3.42 0 0 1-3.138-3.138 3.42 3.42 0 0 0-.806-1.946 3.42 3.42 0 0 1 0-4.438 3.42 3.42 0 0 0 .806-1.946 3.42 3.42 0 0 1 3.138-3.138z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Data Testing (20%)</div>
+            <div class="stat-val">{{ metrics.jumlah_data.testing }}</div>
+            <div class="stat-pct">Evaluasi performa model</div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Metric Cards -->
+<div class="compare-grid anim-up" style="animation-delay:0.15s;">
+    <!-- Naive Bayes -->
+    <div class="card card-hover" {% if is_nb %}style="border-color:var(--accent); box-shadow:0 0 0 1px var(--accent-glow), var(--shadow-glow);"{% endif %}>
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon" {% if is_nb %}style="background:var(--accent-light); color:var(--accent);"{% endif %}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                Multinomial Naive Bayes
+            </div>
+            {% if is_nb %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% else %}
+            <span class="badge" style="background:var(--bg-input); color:var(--text-secondary); font-size:9px;">Baseline</span>
+            {% endif %}
+        </div>
+        <div class="metric-bar-row">
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label">Akurasi Global</span>
+                    <span class="metric-bar-value" style="color:var(--accent);">{{ metrics.naive_bayes.akurasi }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.naive_bayes.akurasi }}%; background:linear-gradient(90deg,#3b82f6,#8b5cf6);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label">Presisi Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--success);">{{ metrics.naive_bayes.presisi }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.naive_bayes.presisi }}%; background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label">Recall Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--warning);">{{ metrics.naive_bayes.recall }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.naive_bayes.recall }}%; background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label">F1-Score Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--danger);">{{ metrics.naive_bayes.f1_score }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.naive_bayes.f1_score }}%; background:linear-gradient(90deg,#ef4444,#fb7185);"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SVM -->
+    <div class="card card-hover" {% if not is_nb %}style="border-color:var(--accent); box-shadow:0 0 0 1px var(--accent-glow), var(--shadow-glow);"{% endif %}>
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon" {% if not is_nb %}style="background:var(--accent-light); color:var(--accent);"{% endif %}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                Support Vector Machine
+            </div>
+            {% if is_nb %}
+            <span class="badge" style="background:var(--bg-input); color:var(--text-secondary); font-size:9px;">Unggul ✓</span>
+            {% else %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% endif %}
+        </div>
+        <div class="metric-bar-row">
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label" style="color:var(--accent);">Akurasi Global</span>
+                    <span class="metric-bar-value" style="color:var(--accent);">{{ metrics.svm.akurasi }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.svm.akurasi }}%; background:linear-gradient(90deg,#3b82f6,#8b5cf6); box-shadow:0 0 8px rgba(59,130,246,0.4);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label" style="color:var(--success);">Presisi Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--success);">{{ metrics.svm.presisi }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.svm.presisi }}%; background:linear-gradient(90deg,#10b981,#34d399); box-shadow:0 0 8px rgba(16,185,129,0.4);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label" style="color:var(--warning);">Recall Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--warning);">{{ metrics.svm.recall }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.svm.recall }}%; background:linear-gradient(90deg,#f59e0b,#fbbf24); box-shadow:0 0 8px rgba(245,158,11,0.4);"></div></div>
+            </div>
+            <div class="metric-bar-item">
+                <div class="metric-bar-header">
+                    <span class="metric-bar-label" style="color:var(--danger);">F1-Score Rata-rata</span>
+                    <span class="metric-bar-value" style="color:var(--danger);">{{ metrics.svm.f1_score }}%</span>
+                </div>
+                <div class="metric-bar-track"><div class="metric-bar-fill" style="width:{{ metrics.svm.f1_score }}%; background:linear-gradient(90deg,#ef4444,#fb7185); box-shadow:0 0 8px rgba(239,68,68,0.4);"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grouped Bar Chart -->
+<div class="card anim-up" style="animation-delay:0.2s;">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-title-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Grafik Perbandingan Metrik
+        </div>
+        <span class="card-subtitle">Evaluasi resmi — dataset PRDECT-ID</span>
+    </div>
+    <div class="chart-wrap" style="height:260px;">
+        <canvas id="chartMetrik"></canvas>
+    </div>
+</div>
+
+<!-- Confusion Matrix -->
+<div class="compare-grid anim-up" style="animation-delay:0.25s;">
+    <div class="card" {% if is_nb %}style="border-color:var(--accent);"{% endif %}>
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon" {% if is_nb %}style="background:var(--accent-light); color:var(--accent);"{% endif %}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+                </div>
+                Confusion Matrix — Naive Bayes
+            </div>
+            {% if is_nb %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th class="matrix-corner"></th>
+                        <th>Pred. Positif</th>
+                        <th>Pred. Negatif</th>
+                        <th>Pred. Netral</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="matrix-label">Aktual Positif</td>
+                        <td class="matrix-cell high-val">{{ metrics.naive_bayes.confusion_matrix[0][0] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[0][1] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[0][2] }}</td>
+                    </tr>
+                    <tr>
+                        <td class="matrix-label">Aktual Negatif</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[1][0] }}</td>
+                        <td class="matrix-cell high-val">{{ metrics.naive_bayes.confusion_matrix[1][1] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[1][2] }}</td>
+                    </tr>
+                    <tr>
+                        <td class="matrix-label">Aktual Netral</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[2][0] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.naive_bayes.confusion_matrix[2][1] }}</td>
+                        <td class="matrix-cell high-val">{{ metrics.naive_bayes.confusion_matrix[2][2] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" {% if not is_nb %}style="border-color:var(--accent);"{% endif %}>
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon" {% if not is_nb %}style="background:var(--accent-light); color:var(--accent);"{% endif %}>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+                </div>
+                Confusion Matrix — SVM
+            </div>
+            {% if not is_nb %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th class="matrix-corner"></th>
+                        <th>Pred. Positif</th>
+                        <th>Pred. Negatif</th>
+                        <th>Pred. Netral</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="matrix-label">Aktual Positif</td>
+                        <td class="matrix-cell high-val">{{ metrics.svm.confusion_matrix[0][0] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[0][1] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[0][2] }}</td>
+                    </tr>
+                    <tr>
+                        <td class="matrix-label">Aktual Negatif</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[1][0] }}</td>
+                        <td class="matrix-cell high-val">{{ metrics.svm.confusion_matrix[1][1] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[1][2] }}</td>
+                    </tr>
+                    <tr>
+                        <td class="matrix-label">Aktual Netral</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[2][0] }}</td>
+                        <td class="matrix-cell low-val">{{ metrics.svm.confusion_matrix[2][1] }}</td>
+                        <td class="matrix-cell high-val">{{ metrics.svm.confusion_matrix[2][2] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Technical Details + Conclusion -->
+<div class="card anim-up" style="animation-delay:0.3s;">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-title-icon">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            Arsitektur &amp; Parameter Teknis
+        </div>
+    </div>
+    <div class="info-box" style="margin-bottom:18px; border-color:rgba(59,130,246,0.2); background:var(--accent-light);">
+        <span class="info-icon">⚡</span>
+        <span>
+            SVM (LinearSVC) mengungguli Naive Bayes pada seluruh metrik evaluasi dengan akurasi
+            <strong style="color:var(--accent);">{{ metrics.svm.akurasi }}%</strong>
+            — selisih <strong>{{ "%.1f"|format(metrics.svm.akurasi - metrics.naive_bayes.akurasi) }}%</strong>
+            lebih tinggi. Model utama aktif saat ini: <strong>{{ "Naive Bayes" if is_nb else "SVM" }}</strong>.
+        </span>
+    </div>
+    <ul class="model-info-list">
+        <li class="model-info-row">
+            <span class="model-info-name">Ekstraksi Fitur Teks</span>
+            <span class="model-info-value">TF-IDF Vectorizer (max_features=10.000, ngram=(1,2))</span>
+        </li>
+        <li class="model-info-row">
+            <span class="model-info-name">Pra-pemrosesan Teks</span>
+            <span class="model-info-value">Case Folding · Noise Removal · Stopwords · Sastrawi Stemmer</span>
+        </li>
+        <li class="model-info-row">
+            <span class="model-info-name">Naive Bayes Hyperparameters</span>
+            <span class="model-info-value">MultinomialNB — Alpha=1.0, Fit Prior=True</span>
+        </li>
+        <li class="model-info-row">
+            <span class="model-info-name">SVM Hyperparameters</span>
+            <span class="model-info-value">LinearSVC — Penalty=L2, Loss=Squared Hinge, C=1.0</span>
+        </li>
+        <li class="model-info-row">
+            <span class="model-info-name">Split Rasio Dataset</span>
+            <span class="model-info-value">80% Training · 20% Testing · Random State=42 · Stratified</span>
+        </li>
+    </ul>
+</div>
+
+{% if not (hasil_csv and hasil_csv.perbandingan_csv) %}
+<!-- ============================================================ -->
+<!-- EMPTY STATE (Hanya tampil di bawah jika tidak ada CSV) -->
+<!-- ============================================================ -->
+<div class="card anim-up" style="animation-delay:0.35s;">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-title-icon" style="background:var(--bg-input); color:var(--text-secondary);">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            Perbandingan Prediksi — CSV yang Diupload
+        </div>
+    </div>
+    <div class="empty-state" style="padding:32px 20px;">
+        <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted);"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="empty-text">
+            Belum ada CSV yang dianalisis.<br>
+            Upload file CSV di halaman <a href="/analisis">Analisis</a> untuk melihat perbandingan dinamis di sini.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card anim-up">
+    <div class="empty-state">
+        <div class="empty-icon">📈</div>
+        <div class="empty-text">
+            Data metrik model belum tersedia.<br>
+            Jalankan <code style="background:var(--bg-input); padding:2px 6px; border-radius:4px; font-family:monospace;">train_model.py</code> terlebih dahulu.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if metrics %}
+<script>
+const isDark   = document.documentElement.getAttribute('data-theme') === 'dark';
+const gridCol  = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+const textCol  = isDark ? '#475569' : '#94a3b8';
+
+new Chart(document.getElementById('chartMetrik'), {
+    type: 'bar',
+    data: {
+        labels: ['Akurasi', 'Presisi', 'Recall', 'F1-Score'],
+        datasets: [
+            {
+                label: 'Naive Bayes',
+                data: [{{ metrics.naive_bayes.akurasi }}, {{ metrics.naive_bayes.presisi }}, {{ metrics.naive_bayes.recall }}, {{ metrics.naive_bayes.f1_score }}],
+                backgroundColor: isDark ? 'rgba(129,140,248,0.35)' : 'rgba(99,102,241,0.3)',
+                borderColor: isDark ? '#818cf8' : '#6366f1',
+                borderWidth: 1.5, borderRadius: 7,
+                barPercentage: 0.75, categoryPercentage: 0.6
+            },
+            {
+                label: 'SVM (LinearSVC)',
+                data: [{{ metrics.svm.akurasi }}, {{ metrics.svm.presisi }}, {{ metrics.svm.recall }}, {{ metrics.svm.f1_score }}],
+                backgroundColor: isDark ? 'rgba(52,211,153,0.35)' : 'rgba(16,185,129,0.3)',
+                borderColor: isDark ? '#34d399' : '#10b981',
+                borderWidth: 1.5, borderRadius: 7,
+                barPercentage: 0.75, categoryPercentage: 0.6
+            }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { color: isDark ? '#f1f5f9' : '#0f172a', font: { family:'Inter', weight:'600', size:11 }, padding: 16, usePointStyle: true, pointStyleWidth: 8 }
+            },
+            tooltip: {
+                padding: 10, cornerRadius: 10,
+                backgroundColor: isDark ? '#1e293b' : '#0f172a',
+                titleFont: { family:'Inter', weight:'700', size:12 },
+                bodyFont:  { family:'Inter', size:11 },
+                callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%' }
+            }
+        },
+        scales: {
+            x: { grid:{display:false}, ticks:{color:textCol, font:{family:'Inter',weight:'600',size:12}} },
+            y: { grid:{color:gridCol}, min:50, max:100, ticks:{color:textCol, font:{family:'Inter',size:10}, callback: v => v+'%'} }
+        }
+    }
+});
+
+// Dynamic confusion matrix coloring
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.matrix-cell').forEach(cell => {
+        const val = parseInt(cell.textContent.trim()) || 0;
+        cell.className = 'matrix-cell ' + (val === 0 ? 'zero-val' : val < 15 ? 'low-val' : 'high-val');
+    });
+});
+</script>
+{% endif %}
+
+{% if hasil_csv and hasil_csv.perbandingan_csv %}
+<script>
+const isDarkPerb = document.documentElement.getAttribute('data-theme') === 'dark';
+const distNBCsv  = {{ hasil_csv.perbandingan_csv.distribusi_nb  | tojson }};
+const distSVMCsv = {{ hasil_csv.perbandingan_csv.distribusi_svm | tojson }};
+
+function buatDoughnut(canvasId, data) {
+    new Chart(document.getElementById(canvasId), {
+        type: 'doughnut',
+        data: {
+            labels: ['Positif', 'Negatif', 'Netral'],
+            datasets: [{
+                data: [data.positif, data.negatif, data.netral],
+                backgroundColor: [
+                    isDarkPerb ? 'rgba(52,211,153,0.85)' : 'rgba(16,185,129,0.85)',
+                    isDarkPerb ? 'rgba(251,113,133,0.85)' : 'rgba(239,68,68,0.85)',
+                    isDarkPerb ? 'rgba(251,191,36,0.85)'  : 'rgba(245,158,11,0.85)'
+                ],
+                borderColor: isDarkPerb ? '#111827' : '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: isDarkPerb ? '#94a3b8' : '#475569',
+                        font: { family:'Inter', size:10 },
+                        padding: 10,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    padding: 10, cornerRadius: 8,
+                    backgroundColor: isDarkPerb ? '#1e293b' : '#0f172a',
+                    callbacks: {
+                        label: function(ctx) {
+                            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                            const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+buatDoughnut('chartNBCsv',  distNBCsv);
+buatDoughnut('chartSVMCsv', distSVMCsv);
+</script>
+{% endif %}
+{% endblock %}

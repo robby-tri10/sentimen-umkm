@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}Beranda — SentimenUMKM{% endblock %}
+{% block breadcrumb %}Beranda{% endblock %}
+
+{% block content %}
+<div class="landing-container anim-up">
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Optimalkan Bisnis UMKM Anda dengan <span class="brand-accent">Analisis Ulasan Berbasis AI</span></h1>
+            <p class="hero-subtitle">
+                SentimenUMKM membantu pelaku UMKM memahami apa yang pelanggan rasakan dari ulasan mereka secara otomatis. 
+                Cukup masukkan teks ulasan atau unggah file, dan AI kami akan mengategorikannya sebagai <strong>Positif</strong>, <strong>Negatif</strong>, atau <strong>Netral</strong> — lengkap dengan saran perbaikan bisnis.
+            </p>
+            <div class="hero-actions">
+                <a href="/analisis" class="btn-hero-primary">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Mulai Analisis Sekarang</span>
+                </a>
+                <a href="#glosarium" class="btn-hero-secondary">
+                    <span>Pelajari Istilah Teknis</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="visual-glow-circle"></div>
+            <!-- Dynamic SVG Dashboard Mockup -->
+            <svg class="hero-svg-illustration" viewBox="0 0 500 350" fill="none">
+                <rect x="10" y="10" width="480" height="330" rx="16" fill="#111827" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+                <!-- Sidebar representation -->
+                <rect x="25" y="25" width="100" height="300" rx="8" fill="#0c1120" stroke="rgba(255,255,255,0.04)"/>
+                <circle cx="45" cy="45" r="10" fill="#3b82f6"/>
+                <rect x="65" y="40" width="50" height="10" rx="3" fill="rgba(255,255,255,0.15)"/>
+                <rect x="35" y="80" width="80" height="15" rx="4" fill="rgba(59,130,246,0.15)"/>
+                <rect x="35" y="110" width="80" height="15" rx="4" fill="rgba(255,255,255,0.05)"/>
+                <rect x="35" y="140" width="80" height="15" rx="4" fill="rgba(255,255,255,0.05)"/>
+                
+                <!-- Main representation -->
+                <rect x="140" y="25" width="335" height="300" rx="8" fill="transparent"/>
+                <rect x="145" y="35" width="150" height="15" rx="4" fill="rgba(255,255,255,0.2)"/>
+                <rect x="145" y="55" width="220" height="8" rx="2" fill="rgba(255,255,255,0.08)"/>
+                
+                <!-- Cards Representation -->
+                <rect x="145" y="85" width="155" height="100" rx="12" fill="rgba(17,24,39,0.9)" stroke="rgba(59,130,246,0.25)" stroke-width="1.5"/>
+                <text x="160" y="115" fill="#94a3b8" font-size="10" font-family="'Inter',sans-serif" font-weight="600">Model Naive Bayes</text>
+                <text x="160" y="145" fill="#f1f5f9" font-size="20" font-family="'Inter',sans-serif" font-weight="800">82.4%</text>
+                <text x="160" y="165" fill="#10b981" font-size="9" font-family="'Inter',sans-serif">Akurasi Validasi</text>
+
+                <rect x="315" y="85" width="155" height="100" rx="12" fill="rgba(17,24,39,0.9)" stroke="rgba(139,92,246,0.25)" stroke-width="1.5"/>
+                <text x="330" y="115" fill="#94a3b8" font-size="10" font-family="'Inter',sans-serif" font-weight="600">Model SVM (Utama)</text>
+                <text x="330" y="145" fill="#f1f5f9" font-size="20" font-family="'Inter',sans-serif" font-weight="800">89.1%</text>
+                <text x="330" y="165" fill="#8b5cf6" font-size="9" font-family="'Inter',sans-serif">Performa Optimal</text>
+                
+                <!-- Chart representation -->
+                <rect x="145" y="200" width="325" height="110" rx="12" fill="#0f1729" stroke="rgba(255,255,255,0.04)"/>
+                <path d="M165 290 Q 210 230 260 250 T 360 215 T 450 220" fill="none" stroke="url(#illustrationGrad)" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="260" cy="250" r="5" fill="#3b82f6" stroke="#111827" stroke-width="2"/>
+                <circle cx="360" cy="215" r="5" fill="#8b5cf6" stroke="#111827" stroke-width="2"/>
+                
+                <defs>
+                    <linearGradient id="illustrationGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#3b82f6"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
+
+    <!-- WORKFLOW / STEPS SECTION -->
+    <div class="section-title-wrapper">
+        <h2 class="section-title">Alur Kerja Sistem</h2>
+        <p class="section-subtitle">Bagaimana SentimenUMKM membantu mengevaluasi ulasan bisnis Anda</p>
+    </div>
+
+    <div class="workflow-grid">
+        <!-- Step 1 -->
+        <div class="workflow-card">
+            <div class="workflow-icon-wrap step-1">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                    <path d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="workflow-step-num">LANGKAH 01</div>
+            <h3 class="workflow-title">Upload / Input Data</h3>
+            <p class="workflow-desc">
+                Masukkan ulasan secara langsung melalui input teks tunggal atau unggah sekaligus dalam format file excel/CSV untuk ulasan dalam jumlah banyak.
+            </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="workflow-card">
+            <div class="workflow-icon-wrap step-2">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="workflow-step-num">LANGKAH 02</div>
+            <h3 class="workflow-title">Klasifikasi Sentimen AI</h3>
+            <p class="workflow-desc">
+                Algoritma Naive Bayes dan SVM (Support Vector Machine) memproses teks ulasan secara cerdas untuk memisahkan opini Positif, Negatif, atau Netral.
+            </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="workflow-card">
+            <div class="workflow-icon-wrap step-3">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                    <path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="workflow-step-num">LANGKAH 03</div>
+            <h3 class="workflow-title">Visualisasi &amp; Aksi Nyata</h3>
+            <p class="workflow-desc">
+                Lihat grafik statistik ulasan di dashboard dan dapatkan rekomendasi tindakan perbaikan berdasarkan poin keluhan pelanggan yang terdeteksi.
+            </p>
+        </div>
+    </div>
+
+    <!-- GLOSARIUM SECTION (FAQ STYLE) -->
+    <div id="glosarium" class="section-title-wrapper" style="margin-top: 80px;">
+        <h2 class="section-title">Glosarium Istilah Teknis</h2>
+        <p class="section-subtitle">Penjelasan bahasa teknis kecerdasan buatan (AI) dengan analogi sederhana yang mudah dipahami</p>
+    </div>
+    <div class="glossary-accordion-wrapper">        <!-- Accordion Item 1 -->
+        <div class="glossary-item">
+            <button class="glossary-header" onclick="toggleGlossary(this)">
+                <div class="glossary-header-title">
+                    <img src="{{ url_for('static', filename='img/glossary-1.png') }}" class="glossary-icon" alt="Brain Icon">
+                    <span>Kecerdasan Buatan (AI) &amp; Klasifikasi Sentimen</span>
+                </div>
+                <svg class="glossary-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="glossary-content-panel">
+                <div class="glossary-body">
+                    <p>
+                        <strong>Apa itu?</strong> Kecerdasan Buatan (AI) adalah bidang teknologi yang membuat komputer bisa berpikir dan mengambil keputusan layaknya manusia. Salah satu tugasnya adalah <strong>Klasifikasi Sentimen</strong>.
+                    </p>
+                    <p class="analogy-box">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning); display: inline-block;"><path d="M9 18h6m-6 3h6m-3-15a6 6 0 0 0-6 6c0 2.5 2 4.5 3.5 6h5C14 14.5 16 12.5 16 10a6 6 0 0 0-6-6z" stroke-linecap="round" stroke-linejoin="round"/></svg> <strong>Analogi Sederhana:</strong> Bayangkan Anda mempekerjakan seorang asisten yang bertugas membaca kotak saran toko. Setiap kali ada kertas saran masuk, asisten tersebut langsung memilahnya ke dalam 3 kotak: <strong>"Senang" (Positif)</strong>, <strong>"Marah/Kecewa" (Negatif)</strong>, atau <strong>"Biasa saja" (Netral)</strong>. Di website ini, asisten tersebut digantikan oleh program AI komputer yang mampu bekerja dalam hitungan milidetik bahkan untuk ribuan ulasan sekaligus.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordion Item 2 -->
+        <div class="glossary-item">
+            <button class="glossary-header" onclick="toggleGlossary(this)">
+                <div class="glossary-header-title">
+                    <img src="{{ url_for('static', filename='img/glossary-2.png') }}" class="glossary-icon" alt="Chart Icon">
+                    <span>Naive Bayes vs Support Vector Machine (SVM)</span>
+                </div>
+                <svg class="glossary-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="glossary-content-panel">
+                <div class="glossary-body">
+                    <p>
+                        <strong>Apa itu?</strong> Keduanya adalah jenis algoritma (rumus matematika/logika) yang digunakan AI untuk belajar mengenali makna sebuah kata di ulasan.
+                    </p>
+                    <ul class="comparison-list">
+                        <li>
+                            <strong>Naive Bayes:</strong> Bekerja menggunakan perhitungan probabilitas (peluang statistik). Algoritma ini menghitung seberapa sering kata tertentu muncul di ulasan positif vs negatif. Sangat cepat dan efisien.
+                        </li>
+                        <li>
+                            <strong>Support Vector Machine (SVM):</strong> Bekerja dengan mencari "garis pembatas" terbaik (hyperplane) yang memisahkan kelompok ulasan positif dan negatif. SVM cenderung lebih akurat dalam mengenali kalimat ulasan yang rumit atau bersayap.
+                        </li>
+                    </ul>
+                    <p class="analogy-box">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning); display: inline-block;"><path d="M9 18h6m-6 3h6m-3-15a6 6 0 0 0-6 6c0 2.5 2 4.5 3.5 6h5C14 14.5 16 12.5 16 10a6 6 0 0 0-6-6z" stroke-linecap="round" stroke-linejoin="round"/></svg> <strong>Analogi Sederhana:</strong> 
+                        Misalkan Anda ingin membedakan apel segar dan apel busuk.
+                        <br>• <strong>Naive Bayes</strong> bertindak seperti anak kecil yang hanya menghitung ciri-ciri: jika apel berwarna merah dan harum, peluangnya 90% segar. Cepat ditebak, tetapi kadang salah jika ada apel merah yang ternyata busuk di dalam.
+                        <br>• <strong>SVM</strong> bertindak seperti ahli pertanian yang menggambar batas garis tegas di atas meja: apel di sebelah kanan garis adalah segar, di sebelah kiri adalah busuk. Garis ini dicari seakurat mungkin agar tidak ada buah yang salah masuk wilayah.
+                     </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordion Item 3 -->
+        <div class="glossary-item">
+            <button class="glossary-header" onclick="toggleGlossary(this)">
+                <div class="glossary-header-title">
+                    <img src="{{ url_for('static', filename='img/glossary-4.png') }}" class="glossary-icon" alt="Scissors Icon">
+                    <span>TF-IDF &amp; Stemming (Pra-pemrosesan Teks)</span>
+                </div>
+                <svg class="glossary-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="glossary-content-panel">
+                <div class="glossary-body">
+                    <p>
+                        Sebelum membaca ulasan Anda, AI harus "merapikan" teks tersebut terlebih dahulu agar tidak bingung oleh tata bahasa manusia. Dua langkah utamanya adalah:
+                    </p>
+                    <ul class="comparison-list">
+                        <li>
+                            <strong>Stemming (Pemotongan Kata):</strong> Mengubah semua kata berimbuhan menjadi kata dasarnya. Contoh: kata <em>"mengirimkan"</em>, <em>"dikirim"</em>, <em>"pengiriman"</em> semuanya dipangkas menjadi <strong>"kirim"</strong>.
+                        </li>
+                        <li>
+                            <strong>TF-IDF (Pembobotan Kata):</strong> Metode untuk memberi nilai penting pada suatu kata. Kata umum seperti <em>"dan"</em>, <em>"yang"</em>, <em>"saya"</em> diberi nilai sangat rendah (karena tidak ada artinya bagi sentimen). Kata seperti <em>"rusak"</em>, <em>"bagus"</em>, atau <em>"lambat"</em> diberi nilai tinggi karena menentukan sentimen ulasan.
+                        </li>
+                    </ul>
+                    <p class="analogy-box">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning); display: inline-block;"><path d="M9 18h6m-6 3h6m-3-15a6 6 0 0 0-6 6c0 2.5 2 4.5 3.5 6h5C14 14.5 16 12.5 16 10a6 6 0 0 0-6-6z" stroke-linecap="round" stroke-linejoin="round"/></svg> <strong>Analogi Sederhana:</strong> Bayangkan Anda ingin merangkum koran berita. 
+                        Pertama, Anda mencoret kata sambung tidak penting seperti "dan", "di", "ke" menggunakan spidol hitam (<strong>Stemming/Filtering</strong>). 
+                        Kedua, Anda memberikan stabilo kuning pada kata kunci yang paling sering dibahas seperti "inflasi" atau "juara" agar mata Anda langsung tertuju ke sana (<strong>TF-IDF</strong>). Hasil coretan stabilo inilah yang dibaca oleh AI.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordion Item 4 -->
+        <div class="glossary-item">
+            <button class="glossary-header" onclick="toggleGlossary(this)">
+                <div class="glossary-header-title">
+                    <img src="{{ url_for('static', filename='img/glossary-3.png') }}" class="glossary-icon" alt="AI Icon">
+                    <span>Confusion Matrix &amp; Metrik Akurasi</span>
+                </div>
+                <svg class="glossary-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M19 9l-7 7-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="glossary-content-panel">
+                <div class="glossary-body">
+                    <p>
+                        Bagaimana kita tahu AI kita pintar atau hanya sekadar menebak asal-asalan? Kita mengukurnya dengan:
+                    </p>
+                    <ul class="comparison-list">
+                        <li>
+                            <strong>Confusion Matrix (Matriks Kebingungan):</strong> Sebuah tabel yang mencatat skor tebakan AI. Tabel ini memetakan berapa banyak ulasan negatif yang benar didefinisikan sebagai negatif (True Negative), dan berapa banyak yang salah dikira positif (False Positive).
+                        </li>
+                        <li>
+                            <strong>Akurasi (Accuracy):</strong> Persentase total tebakan benar AI dari seluruh data yang diuji. Jika akurasinya 90%, artinya AI berhasil menebak 90 ulasan dengan tepat dari total 100 ulasan.
+                        </li>
+                    </ul>
+                    <p class="analogy-box">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning); display: inline-block;"><path d="M9 18h6m-6 3h6m-3-15a6 6 0 0 0-6 6c0 2.5 2 4.5 3.5 6h5C14 14.5 16 12.5 16 10a6 6 0 0 0-6-6z" stroke-linecap="round" stroke-linejoin="round"/></svg> <strong>Analogi Sederhana:</strong> Ini seperti <strong>"Rapor Hasil Ujian"</strong> seorang siswa di sekolah. 
+                        <br>• <strong>Akurasi</strong> adalah nilai rata-rata ujian siswa tersebut secara keseluruhan.
+                        <br>• <strong>Confusion Matrix</strong> adalah detail lembar jawaban ujiannya. Dari tabel ini kita bisa tahu: "Oh, anak ini sangat pintar menjawab soal pilihan ganda tentang sains (sentimen positif), tetapi dia sering terkecoh pada soal jebakan di materi sejarah (sentimen netral)."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Custom Embedded JavaScript for Accordion -->
+<script>
+    function toggleGlossary(headerElement) {
+        // Find parent item
+        const parentItem = headerElement.parentElement;
+        const panel = parentItem.querySelector('.glossary-content-panel');
+        const arrow = parentItem.querySelector('.glossary-arrow');
+        const isAlreadyOpen = parentItem.classList.contains('active');
+        
+        // Close other items
+        const allItems = document.querySelectorAll('.glossary-item');
+        allItems.forEach(item => {
+            if (item !== parentItem) {
+                item.classList.remove('active');
+                const itemPanel = item.querySelector('.glossary-content-panel');
+                if (itemPanel) {
+                    itemPanel.style.maxHeight = null;
+                }
+            }
+        });
+        
+        // Toggle current item
+        if (isAlreadyOpen) {
+            parentItem.classList.remove('active');
+            panel.style.maxHeight = null;
+        } else {
+            parentItem.classList.add('active');
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    }
+</script>
+{% endblock %}

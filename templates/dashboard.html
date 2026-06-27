@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SentimenUMKM{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header anim-up">
+    <h1 class="page-title">Dashboard Visualisasi Sentimen</h1>
+    <p class="page-sub">Analisis komprehensif distribusi sentimen ulasan pelanggan dari data CSV</p>
+</div>
+
+{% if hasil %}
+{% set is_nb = hasil.selected_algo == 'nb' %}
+{% set dist = hasil.distribusi_nb if is_nb else hasil.distribusi_svm %}
+{% set selected_abbr = "Naive Bayes" if is_nb else "SVM" %}
+
+<!-- Inject selected algorithm into sessionStorage immediately for JS table filtering -->
+<script>
+    sessionStorage.setItem('selected_algo', '{{ hasil.selected_algo or "svm" }}');
+</script>
+
+<!-- Stat Cards Row -->
+<div class="stat-grid anim-up" style="animation-delay:0.05s;">
+    <!-- POSITIF -->
+    <div class="stat-card stat-positif">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path d="M14.828 14.828a4 4 0 0 1-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Sentimen Positif</div>
+            <div class="stat-val">{{ dist.positif }}</div>
+            <div class="stat-pct">{{ "%.1f"|format(dist.positif / hasil.total_ulasan * 100) if hasil.total_ulasan > 0 else "0.0" }}% dari total ulasan</div>
+        </div>
+    </div>
+    <!-- NEGATIF -->
+    <div class="stat-card stat-negatif">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path d="M9.172 16.172a4 4 0 0 1 5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Sentimen Negatif</div>
+            <div class="stat-val">{{ dist.negatif }}</div>
+            <div class="stat-pct">{{ "%.1f"|format(dist.negatif / hasil.total_ulasan * 100) if hasil.total_ulasan > 0 else "0.0" }}% dari total ulasan</div>
+        </div>
+    </div>
+    <!-- NETRAL -->
+    <div class="stat-card stat-netral">
+        <div class="stat-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path d="M8 12h8M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-info">
+            <div class="stat-label">Sentimen Netral</div>
+            <div class="stat-val">{{ dist.netral }}</div>
+            <div class="stat-pct">{{ "%.1f"|format(dist.netral / hasil.total_ulasan * 100) if hasil.total_ulasan > 0 else "0.0" }}% dari total ulasan</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="chart-container-row anim-up" style="animation-delay:0.1s;">
+    <!-- Doughnut Chart SVM -->
+    <div class="card card-hover">
+        <div class="card-header" style="margin-bottom:0; border-bottom:none; padding-bottom:0;">
+            <div class="card-title">
+                <div class="card-title-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                Distribusi SVM
+            </div>
+            {% if is_nb %}
+            <span class="badge" style="background:var(--bg-input); color:var(--text-secondary); font-size:9px;">Pembanding</span>
+            {% else %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% endif %}
+        </div>
+        <div style="position:relative; height:200px; display:flex; align-items:center; justify-content:center;">
+            <canvas id="chartSVM"></canvas>
+            <div id="svm-doughnut-center" style="
+                position:absolute; text-align:center; pointer-events:none;
+                display:flex; flex-direction:column; align-items:center;
+            ">
+                <div style="font-size:26px; font-weight:900; color:var(--text-primary); letter-spacing:-0.04em; line-height:1;">{{ hasil.total_ulasan }}</div>
+                <div style="font-size:10px; color:var(--text-secondary); font-weight:500; margin-top:2px;">Total Ulasan</div>
+            </div>
+        </div>
+        <!-- Legend -->
+        <div style="display:flex; justify-content:center; gap:16px; margin-top:8px;">
+            <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-secondary);">
+                <span style="width:8px; height:8px; border-radius:2px; background:var(--success); display:inline-block;"></span>Positif
+            </div>
+            <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-secondary);">
+                <span style="width:8px; height:8px; border-radius:2px; background:var(--danger); display:inline-block;"></span>Negatif
+            </div>
+            <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-secondary);">
+                <span style="width:8px; height:8px; border-radius:2px; background:var(--warning); display:inline-block;"></span>Netral
+            </div>
+        </div>
+    </div>
+
+    <!-- Bar Chart NB -->
+    <div class="card card-hover">
+        <div class="card-header" style="margin-bottom:0; border-bottom:none; padding-bottom:0;">
+            <div class="card-title">
+                <div class="card-title-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                Distribusi Naive Bayes
+            </div>
+            {% if is_nb %}
+            <span class="badge badge-positif" style="font-size:9px;">Model Utama</span>
+            {% else %}
+            <span class="badge" style="background:var(--bg-input); color:var(--text-secondary); font-size:9px;">Pembanding</span>
+            {% endif %}
+        </div>
+        <div class="chart-wrap" style="height:220px; margin-top:8px;">
+            <canvas id="chartNB"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Kata Kunci & Tabel Ulasan -->
+<div class="anim-up" style="animation-delay:0.15s;">
+    {% if hasil.kata_kunci_negatif %}
+    <div class="card card-hover" style="margin-bottom:18px;">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon" style="background:var(--danger-light); color:var(--danger);">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3l-4 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                Kata Kunci Ulasan Negatif Teratas
+            </div>
+            <span class="card-subtitle">Frekuensi kemunculan dari ulasan negatif ({{ selected_abbr }})</span>
+        </div>
+        <div class="keyword-bar-grid">
+            {% for item in hasil.kata_kunci_negatif %}
+            <div class="keyword-bar-row">
+                <span class="keyword-bar-label">{{ item.kata }}</span>
+                <div class="keyword-bar-track">
+                    <div class="keyword-bar-fill" data-width="{{ [item.frekuensi * 8, 100]|min }}%"></div>
+                </div>
+                <span class="keyword-bar-val">{{ item.frekuensi }}×</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detail Table -->
+    <div class="card card-hover" id="detail-ulasan-card" style="display:none;">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                Daftar Ulasan Terklasifikasi
+            </div>
+            <span class="card-subtitle" id="table-total-info">Menampilkan ulasan</span>
+        </div>
+
+        <!-- Filter & Search -->
+        <div class="table-filter-bar">
+            <div class="search-input-wrap">
+                <input type="text" id="search-input" class="search-input" placeholder="Cari ulasan..." oninput="handleTableSearch()">
+            </div>
+            <div class="filter-btn-group">
+                <button class="filter-btn active" onclick="filterTableSentiment('all',this)">Semua</button>
+                <button class="filter-btn" onclick="filterTableSentiment('positif',this)">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--success); display: inline-block;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg> Positif
+                </button>
+                <button class="filter-btn" onclick="filterTableSentiment('negatif',this)">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--danger); display: inline-block;"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2M9 9h.01M15 9h.01"/></svg> Negatif
+                </button>
+                <button class="filter-btn" onclick="filterTableSentiment('netral',this)">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align: middle; margin-right: 4px; color: var(--warning); display: inline-block;"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg> Netral
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th style="width:60%;">Ulasan Pelanggan</th>
+                        <th style="width:20%; text-align:center;">Naive Bayes {{ '(Utama)' if is_nb else '' }}</th>
+                        <th style="width:20%; text-align:center;">SVM {{ '(Utama)' if not is_nb else '' }}</th>
+                    </tr>
+                </thead>
+                <tbody id="ulasan-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="table-pagination">
+            <span id="pagination-info">—</span>
+            <div class="pagination-controls">
+                <button class="pagination-btn" id="btn-prev" onclick="changeTablePage(-1)" aria-label="Previous">◀</button>
+                <button class="pagination-btn" id="btn-next" onclick="changeTablePage(1)" aria-label="Next">▶</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="card anim-up">
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted);"><path d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="empty-text">
+            Belum ada data analisis untuk ditampilkan.<br>
+            Silakan unggah file CSV di halaman <a href="/analisis">Analisis</a> terlebih dahulu.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if hasil %}
+<script>
+const distSVM = {{ hasil.distribusi_svm | tojson }};
+const distNB  = {{ hasil.distribusi_nb  | tojson }};
+const isDark  = document.documentElement.getAttribute('data-theme') === 'dark';
+
+// ── DOUGHNUT CHART SVM ──────────────────────────────────────
+new Chart(document.getElementById('chartSVM'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Positif', 'Negatif', 'Netral'],
+        datasets: [{
+            data: [distSVM.positif, distSVM.negatif, distSVM.netral],
+            backgroundColor: [
+                isDark ? 'rgba(52, 211, 153, 0.85)' : 'rgba(16, 185, 129, 0.85)',
+                isDark ? 'rgba(251, 113, 133, 0.85)' : 'rgba(239, 68, 68, 0.85)',
+                isDark ? 'rgba(251, 191, 36, 0.85)' : 'rgba(245, 158, 11, 0.85)'
+            ],
+            borderColor: isDark ? '#111827' : '#ffffff',
+            borderWidth: 3,
+            hoverBorderWidth: 0,
+            hoverOffset: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                padding: 12, cornerRadius: 10,
+                backgroundColor: isDark ? '#1e293b' : '#0f172a',
+                titleFont: { family: 'Inter', weight: '700', size: 12 },
+                bodyFont:  { family: 'Inter', size: 11 },
+                callbacks: {
+                    label: function(ctx) {
+                        const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                        const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                        return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// ── BAR CHART NB ────────────────────────────────────────────
+const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+const textColor = isDark ? '#475569' : '#94a3b8';
+
+new Chart(document.getElementById('chartNB'), {
+    type: 'bar',
+    data: {
+        labels: ['Positif', 'Negatif', 'Netral'],
+        datasets: [{
+            data: [distNB.positif, distNB.negatif, distNB.netral],
+            backgroundColor: [
+                isDark ? 'rgba(52,211,153,0.7)' : 'rgba(16,185,129,0.7)',
+                isDark ? 'rgba(251,113,133,0.7)' : 'rgba(239,68,68,0.7)',
+                isDark ? 'rgba(251,191,36,0.7)'  : 'rgba(245,158,11,0.7)'
+            ],
+            borderColor: [
+                isDark ? '#34d399' : '#10b981',
+                isDark ? '#fb7185' : '#ef4444',
+                isDark ? '#fbbf24' : '#f59e0b'
+            ],
+            borderWidth: 1.5,
+            borderRadius: 8,
+            barThickness: 32,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                padding: 10, cornerRadius: 8,
+                backgroundColor: isDark ? '#1e293b' : '#0f172a',
+                titleFont: { family: 'Inter', weight: '700', size: 12 },
+                bodyFont:  { family: 'Inter', size: 11 },
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: textColor, font: { family: 'Inter', weight: '600', size: 11 } }
+            },
+            y: {
+                grid: { color: gridColor },
+                beginAtZero: true,
+                ticks: { color: textColor, font: { family: 'Inter', size: 10 }, stepSize: Math.max(1, Math.ceil(distNB.total / 8)) }
+            }
+        }
+    }
+});
+
+// ── Keyword bars animate ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelectorAll('.keyword-bar-fill').forEach(el => {
+            el.style.width = el.getAttribute('data-width');
+        });
+    }, 200);
+});
+</script>
+{% endif %}
+{% endblock %}
