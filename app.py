@@ -5,10 +5,11 @@
 import pickle
 import os
 import io
+import uuid
 import pandas as pd
 from flask import (
     Flask, render_template, request,
-    jsonify, session
+    jsonify, session, send_file
 )
 from preprocessor import preprocess, preprocess_batch
 from recommender import get_rekomendasi, get_rekomendasi_batch
@@ -17,9 +18,11 @@ app = Flask(__name__)
 app.secret_key = 'sentimen-umkm-secret-key-2024'
 
 # ============================================================
-# LOAD MODEL (dilakukan sekali saat server start)
+# LOAD MODEL & SETUP
 # ============================================================
 MODEL_DIR = "models"
+TEMP_DIR = "temp_results"
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 def load_models():
     """Memuat semua model yang sudah ditraining."""
@@ -153,6 +156,14 @@ def perbandingan():
     """Halaman perbandingan metrik Naive Bayes vs SVM."""
     hasil_csv = session.get('hasil_csv', None)
     return render_template('perbandingan.html', metrics=metrics_data, hasil_csv=hasil_csv)
+
+
+@app.route('/clear-data')
+def clear_data():
+    """Hapus semua data hasil analisis CSV dari session."""
+    session.pop('hasil_csv', None)
+    from flask import redirect, url_for
+    return redirect(url_for('index'))
 
 
 # ============================================================
@@ -352,6 +363,14 @@ def api_predict_csv():
             "label_svm_tampil": label_to_indo(row['label_svm'])
         })
 
+    # Simpan dataframe ke file temp untuk diunduh nanti
+    file_id = str(uuid.uuid4())
+    temp_path = os.path.join(TEMP_DIR, f"{file_id}.csv")
+    df_export = df[['teks', 'teks_bersih', label_col]].copy()
+    df_export.columns = ['Ulasan Asli', 'Ulasan Bersih', 'Sentimen']
+    df_export['Sentimen'] = df_export['Sentimen'].map({'positive': 'Positif', 'negative': 'Negatif', 'neutral': 'Netral'})
+    df_export.to_csv(temp_path, index=False, encoding='utf-8')
+
     hasil = {
         "total_ulasan": total,
         "distribusi_nb": dist_nb,
@@ -359,7 +378,8 @@ def api_predict_csv():
         "rekomendasi": rekomendasi_batch,
         "kata_kunci_negatif": kata_kunci,
         "detail_ulasan": detail_ulasan,
-        "selected_algo": algo
+        "selected_algo": algo,
+        "file_id": file_id
     }
 
     # Simpan ke session tanpa detail_ulasan agar tidak overflow cookie
@@ -385,6 +405,50 @@ def api_predict_csv():
     session['hasil_csv'] = hasil_session
 
     return jsonify(hasil)
+
+
+@app.route('/api/download-csv/<file_id>', methods=['GET'])
+def download_csv(file_id):
+    """
+    Endpoint untuk mendownload hasil analisis CSV yang sudah difilter berdasarkan sentimen.
+    """
+    sentiment_filter = request.args.get('sentiment', 'all').lower()
+    
+    # Path ke file sementara
+    temp_path = os.path.join(TEMP_DIR, f"{file_id}.csv")
+    if not os.path.exists(temp_path):
+        return "File tidak ditemukan atau sudah kadaluarsa", 404
+
+    try:
+        df = pd.read_csv(temp_path)
+        
+        # Filter berdasarkan sentimen
+        if sentiment_filter == 'positive':
+            df = df[df['Sentimen'] == 'Positif']
+            filename_suffix = "Positif"
+        elif sentiment_filter == 'negative':
+            df = df[df['Sentimen'] == 'Negatif']
+            filename_suffix = "Negatif"
+        elif sentiment_filter == 'neutral':
+            df = df[df['Sentimen'] == 'Netral']
+            filename_suffix = "Netral"
+        else:
+            filename_suffix = "Lengkap"
+
+        # Simpan sementara memori buffer untuk didownload
+        output = io.BytesIO()
+        df.to_csv(output, index=False, encoding='utf-8')
+        output.seek(0)
+
+        return send_file(
+            output,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'Hasil_Analisis_Sentimen_{filename_suffix}.csv'
+        )
+    except Exception as e:
+        print(f"[ERROR download-csv] {str(e)}")
+        return "Terjadi kesalahan saat membuat file unduhan", 500
 
 
 # ============================================================
