@@ -69,11 +69,16 @@ def predict_single(teks_asli, algo='svm'):
     svm_label = svm_model.predict(vektor)[0]
     try:
         svm_decision = svm_model.decision_function(vektor)[0]
+        import numpy as np
         if hasattr(svm_decision, '__len__'):
-            total = sum(abs(d) for d in svm_decision) + 1e-9
-            svm_conf = round(float(max(abs(d) for d in svm_decision) / total) * 100, 1)
+            # Softmax conversion to get natural probability percentage
+            exp_scores = np.exp(svm_decision - np.max(svm_decision))
+            probs = exp_scores / np.sum(exp_scores)
+            svm_conf = round(float(np.max(probs)) * 100, 1)
         else:
-            svm_conf = round(min(abs(float(svm_decision)) * 20, 99.9), 1)
+            # Sigmoid for binary classification
+            prob = 1 / (1 + np.exp(-svm_decision))
+            svm_conf = round(float(max(prob, 1 - prob)) * 100, 1)
         svm_conf = min(svm_conf, 99.9)
     except Exception:
         svm_conf = 80.0  # fallback jika decision_function gagal
