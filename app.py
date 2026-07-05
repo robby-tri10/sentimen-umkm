@@ -43,6 +43,29 @@ def load_models():
 
 nb_model, svm_model, vectorizer, metrics_data = load_models()
 
+
+def check_neutral_lexicon(teks_bersih):
+    """Menentukan apakah teks cenderung netral (tidak memiliki kata sentimen positif/negatif)."""
+    positif_words = {
+        'bagus', 'indah', 'puas', 'mantap', 'keren', 'adem', 'nyaman', 'cepat', 
+        'ramah', 'rapi', 'murah', 'original', 'ori', 'tebal', 'awet', 'rekomendasi',
+        'recommended', 'suka', 'cinta', 'hebat', 'berfungsi', 'baik', 'aman',
+        'sesuai', 'pas', 'cocok', 'top', 'oke', 'ok', 'good', 'best'
+    }
+
+    negatif_words = {
+        'rusak', 'kecewa', 'jelek', 'buruk', 'lambat', 'lama', 'sobek', 'pecah',
+        'cacat', 'penyok', 'palsu', 'tipu', 'bohong', 'mahal', 'kesal', 'rugi',
+        'nyesel', 'menyesal', 'parah', 'retak', 'hancur', 'patah', 'slow'
+    }
+    
+    tokens = teks_bersih.split()
+    has_pos = any(w in positif_words for w in tokens)
+    has_neg = any(w in negatif_words for w in tokens)
+    
+    return not has_pos and not has_neg
+
+
 # ============================================================
 # HELPER: Prediksi satu teks
 # ============================================================
@@ -56,32 +79,41 @@ def predict_single(teks_asli, algo='svm'):
         }
 
     vektor = vectorizer.transform([teks_bersih])
+    is_neutral = check_neutral_lexicon(teks_bersih)
 
     # Prediksi Naive Bayes
-    nb_label = nb_model.predict(vektor)[0]
-    try:
-        nb_proba = nb_model.predict_proba(vektor)[0]
-        nb_conf = round(float(max(nb_proba)) * 100, 1)
-    except Exception:
-        nb_conf = 75.0  # fallback jika predict_proba gagal
+    if is_neutral:
+        nb_label = 'neutral'
+        nb_conf = 99.0
+    else:
+        nb_label = nb_model.predict(vektor)[0]
+        try:
+            nb_proba = nb_model.predict_proba(vektor)[0]
+            nb_conf = round(float(max(nb_proba)) * 100, 1)
+        except Exception:
+            nb_conf = 75.0  # fallback jika predict_proba gagal
 
     # Prediksi SVM (LinearSVC tidak punya predict_proba)
-    svm_label = svm_model.predict(vektor)[0]
-    try:
-        svm_decision = svm_model.decision_function(vektor)[0]
-        import numpy as np
-        if hasattr(svm_decision, '__len__'):
-            # Softmax conversion to get natural probability percentage
-            exp_scores = np.exp(svm_decision - np.max(svm_decision))
-            probs = exp_scores / np.sum(exp_scores)
-            svm_conf = round(float(np.max(probs)) * 100, 1)
-        else:
-            # Sigmoid for binary classification
-            prob = 1 / (1 + np.exp(-svm_decision))
-            svm_conf = round(float(max(prob, 1 - prob)) * 100, 1)
-        svm_conf = min(svm_conf, 99.9)
-    except Exception:
-        svm_conf = 80.0  # fallback jika decision_function gagal
+    if is_neutral:
+        svm_label = 'neutral'
+        svm_conf = 99.0
+    else:
+        svm_label = svm_model.predict(vektor)[0]
+        try:
+            svm_decision = svm_model.decision_function(vektor)[0]
+            import numpy as np
+            if hasattr(svm_decision, '__len__'):
+                # Softmax conversion to get natural probability percentage
+                exp_scores = np.exp(svm_decision - np.max(svm_decision))
+                probs = exp_scores / np.sum(exp_scores)
+                svm_conf = round(float(np.max(probs)) * 100, 1)
+            else:
+                # Sigmoid for binary classification
+                prob = 1 / (1 + np.exp(-svm_decision))
+                svm_conf = round(float(max(prob, 1 - prob)) * 100, 1)
+            svm_conf = min(svm_conf, 99.9)
+        except Exception:
+            svm_conf = 80.0  # fallback jika decision_function gagal
 
     # Rekomendasi dari model terpilih (bila labelnya negatif)
     rekomendasi = []
@@ -266,8 +298,20 @@ def api_predict_csv():
 
     # Prediksi batch
     vektor = vectorizer.transform(df['teks_bersih'])
-    df['label_nb'] = nb_model.predict(vektor)
-    df['label_svm'] = svm_model.predict(vektor)
+    pred_nb = nb_model.predict(vektor)
+    pred_svm = svm_model.predict(vektor)
+    
+    # Terapkan override netral berdasarkan leksikon
+    neutral_mask = df['teks_bersih'].apply(check_neutral_lexicon)
+    
+    df['label_nb'] = [
+        'neutral' if is_neut else label 
+        for is_neut, label in zip(neutral_mask, pred_nb)
+    ]
+    df['label_svm'] = [
+        'neutral' if is_neut else label 
+        for is_neut, label in zip(neutral_mask, pred_svm)
+    ]
 
     # Hitung distribusi
     total = len(df)
