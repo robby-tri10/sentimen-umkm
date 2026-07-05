@@ -44,25 +44,26 @@ def load_models():
 nb_model, svm_model, vectorizer, metrics_data = load_models()
 
 
+# Kamus Kata Sentimen (Global agar tidak di-recreate di setiap baris/ulasan)
+POSITIF_WORDS = {
+    'bagus', 'indah', 'puas', 'mantap', 'keren', 'adem', 'nyaman', 'cepat', 
+    'ramah', 'rapi', 'murah', 'original', 'ori', 'tebal', 'awet', 'rekomendasi',
+    'recommended', 'suka', 'cinta', 'hebat', 'berfungsi', 'baik', 'aman',
+    'sesuai', 'pas', 'cocok', 'top', 'oke', 'ok', 'good', 'best'
+}
+
+NEGATIF_WORDS = {
+    'rusak', 'kecewa', 'jelek', 'buruk', 'lambat', 'lama', 'sobek', 'pecah',
+    'cacat', 'penyok', 'palsu', 'tipu', 'bohong', 'mahal', 'kesal', 'rugi',
+    'nyesel', 'menyesal', 'parah', 'retak', 'hancur', 'patah', 'slow'
+}
+
+
 def check_neutral_lexicon(teks_bersih):
     """Menentukan apakah teks cenderung netral (tidak memiliki kata sentimen positif/negatif)."""
-    positif_words = {
-        'bagus', 'indah', 'puas', 'mantap', 'keren', 'adem', 'nyaman', 'cepat', 
-        'ramah', 'rapi', 'murah', 'original', 'ori', 'tebal', 'awet', 'rekomendasi',
-        'recommended', 'suka', 'cinta', 'hebat', 'berfungsi', 'baik', 'aman',
-        'sesuai', 'pas', 'cocok', 'top', 'oke', 'ok', 'good', 'best'
-    }
-
-    negatif_words = {
-        'rusak', 'kecewa', 'jelek', 'buruk', 'lambat', 'lama', 'sobek', 'pecah',
-        'cacat', 'penyok', 'palsu', 'tipu', 'bohong', 'mahal', 'kesal', 'rugi',
-        'nyesel', 'menyesal', 'parah', 'retak', 'hancur', 'patah', 'slow'
-    }
-    
     tokens = teks_bersih.split()
-    has_pos = any(w in positif_words for w in tokens)
-    has_neg = any(w in negatif_words for w in tokens)
-    
+    has_pos = any(w in POSITIF_WORDS for w in tokens)
+    has_neg = any(w in NEGATIF_WORDS for w in tokens)
     return not has_pos and not has_neg
 
 
