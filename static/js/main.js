@@ -8,7 +8,31 @@ document.addEventListener('DOMContentLoaded', () => {
     initDragAndDrop();
     initDashboardTable();
     animateKeywordBars();
+    initCharCounter();
 });
+
+function initCharCounter() {
+    const ta = document.getElementById('input-teks');
+    const counter = document.getElementById('char-counter');
+    if (!ta || !counter) return;
+    
+    const updateCounter = () => {
+        const len = ta.value.length;
+        counter.textContent = `${len} / 1000`;
+        if (len >= 1000) {
+            counter.style.color = 'var(--danger)';
+        } else if (len >= 800) {
+            counter.style.color = 'var(--warning)';
+        } else {
+            counter.style.color = 'var(--text-muted)';
+        }
+    };
+    
+    ta.addEventListener('input', updateCounter);
+    // Listen for custom programmatic updates (e.g. from isiContohTeks)
+    ta.addEventListener('change', updateCounter);
+    ta.addEventListener('keyup', updateCounter);
+}
 
 // ============================================================
 // 1. THEME MANAGEMENT
@@ -58,6 +82,7 @@ function isiContohTeks(sentiment) {
     if (ta && CONTOH_TEKS[sentiment]) {
         ta.value = CONTOH_TEKS[sentiment];
         ta.focus();
+        ta.dispatchEvent(new Event('input'));
     }
 }
 
@@ -130,7 +155,8 @@ async function analisTeks() {
     if (!teksInput) return;
 
     const teks = teksInput.value.trim();
-    if (!teks) { alert('Masukkan ulasan terlebih dahulu.'); return; }
+    clearTeksError();
+    if (!teks) { showTeksError('Masukkan ulasan terlebih dahulu.'); return; }
 
     const selectedAlgo = document.getElementById('selected-algo')?.value || 'svm';
 
@@ -147,14 +173,28 @@ async function analisTeks() {
         const data = await resp.json();
         hideLoading();
 
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showTeksError('Error: ' + data.error); return; }
         tampilHasilTeks(data);
 
     } catch (err) {
         hideLoading();
-        alert('Koneksi ke server gagal. Pastikan server Flask aktif di port 5000.');
+        showTeksError('Koneksi ke server gagal. Pastikan server Flask aktif di port 5000.');
         console.error(err);
     }
+}
+
+function showTeksError(msg) {
+    const container = document.getElementById('teks-error-container');
+    const el = document.getElementById('teks-error-text');
+    if (container && el) {
+        el.textContent = msg;
+        container.style.display = 'flex';
+    }
+}
+
+function clearTeksError() {
+    const container = document.getElementById('teks-error-container');
+    if (container) container.style.display = 'none';
 }
 
 function tampilHasilTeks(data) {
@@ -258,7 +298,11 @@ function tampilHasilTeks(data) {
 
 function resetTeks() {
     const ta = document.getElementById('input-teks');
-    if (ta) ta.value = '';
+    if (ta) {
+        ta.value = '';
+        ta.dispatchEvent(new Event('input'));
+    }
+    clearTeksError();
     const hasilTeks = document.getElementById('hasil-teks');
     if (hasilTeks) hasilTeks.style.display = 'none';
 }
@@ -334,7 +378,8 @@ function previewCsvData(file) {
 }
 
 async function uploadCSV() {
-    if (!selectedFile) { alert('Pilih file CSV terlebih dahulu.'); return; }
+    clearCsvError();
+    if (!selectedFile) { showCsvError('Pilih file CSV terlebih dahulu.'); return; }
 
     showLoading();
     const hasilCsv = document.getElementById('hasil-csv');
@@ -351,7 +396,7 @@ async function uploadCSV() {
         const data = await resp.json();
         hideLoading();
 
-        if (data.error) { alert('Error: ' + data.error); return; }
+        if (data.error) { showCsvError('Error: ' + data.error); return; }
 
         if (data.detail_ulasan) {
             sessionStorage.setItem('detail_ulasan', JSON.stringify(data.detail_ulasan));
@@ -360,9 +405,23 @@ async function uploadCSV() {
 
     } catch (err) {
         hideLoading();
-        alert('Kesalahan koneksi saat mengunggah file.');
+        showCsvError('Kesalahan koneksi saat mengunggah file.');
         console.error(err);
     }
+}
+
+function showCsvError(msg) {
+    const container = document.getElementById('csv-error-container');
+    const el = document.getElementById('csv-error-text');
+    if (container && el) {
+        el.textContent = msg;
+        container.style.display = 'flex';
+    }
+}
+
+function clearCsvError() {
+    const container = document.getElementById('csv-error-container');
+    if (container) container.style.display = 'none';
 }
 
 function tampilHasilCSV(data) {
@@ -426,6 +485,32 @@ function tampilHasilCSV(data) {
         hasilCsv.style.display = 'block';
         setTimeout(() => hasilCsv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
     }
+// ── Render tombol download per sentimen ──
+const dlGroup = document.getElementById('download-btn-group');
+if (dlGroup && data.file_id) {
+    const fileId = data.file_id;
+    dlGroup.innerHTML = `
+        <a href="/api/download-csv/${fileId}?sentiment=all"
+           class="btn-secondary" style="font-size:12px; padding:8px 14px; text-decoration:none;">
+            ⬇ Semua
+        </a>
+        <a href="/api/download-csv/${fileId}?sentiment=positive"
+           class="btn-secondary" style="font-size:12px; padding:8px 14px; 
+           text-decoration:none; color:var(--success); border-color:var(--success);">
+            ⬇ Positif
+        </a>
+        <a href="/api/download-csv/${fileId}?sentiment=negative"
+           class="btn-secondary" style="font-size:12px; padding:8px 14px; 
+           text-decoration:none; color:var(--danger); border-color:var(--danger);">
+            ⬇ Negatif
+        </a>
+        <a href="/api/download-csv/${fileId}?sentiment=neutral"
+           class="btn-secondary" style="font-size:12px; padding:8px 14px; 
+           text-decoration:none; color:var(--warning); border-color:var(--warning);">
+            ⬇ Netral
+        </a>
+    `;
+}
 }
 
 function resetCSV() {
@@ -439,6 +524,7 @@ function resetCSV() {
     const btn = document.getElementById('btn-upload');
     if (btn) btn.disabled = true;
 
+    clearCsvError();
     const hint = document.getElementById('csv-upload-hint');
     if (hint) hint.style.display = 'block';
 }

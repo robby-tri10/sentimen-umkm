@@ -39,7 +39,18 @@
             class="textarea-input"
             placeholder="Contoh: Barangnya bagus sekali, pengiriman cepat dan penjual ramah..."
             rows="5"
+            maxlength="1000"
         ></textarea>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px; margin-bottom: 8px;">
+            <span>Maksimum 1.000 karakter</span>
+            <span id="char-counter">0 / 1000</span>
+        </div>
+        
+        <!-- Container untuk alert/error visual -->
+        <div id="teks-error-container" style="display:none; margin-top:14px; padding:12px 16px; background:var(--danger-light); border:1px solid rgba(239,68,68,0.2); border-radius:8px; color:var(--danger); font-size:12px; align-items:center; gap:8px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="teks-error-text"></span>
+        </div>
 
         <!-- Quick Examples -->
         <div class="quick-examples">
@@ -149,6 +160,12 @@
                     <tbody id="preview-rows"></tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Container untuk alert/error visual -->
+        <div id="csv-error-container" style="display:none; margin-top:14px; padding:12px 16px; background:var(--danger-light); border:1px solid rgba(239,68,68,0.2); border-radius:8px; color:var(--danger); font-size:12px; align-items:center; gap:8px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="csv-error-text"></span>
         </div>
 
         <div id="file-info" class="file-info" style="display:none;"></div>

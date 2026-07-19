@@ -6,6 +6,7 @@ import pickle
 import os
 import io
 import uuid
+import time
 import pandas as pd
 from flask import (
     Flask, render_template, request,
@@ -23,6 +24,19 @@ app.secret_key = 'sentimen-umkm-secret-key-2024'
 MODEL_DIR = "models"
 TEMP_DIR = "temp_results"
 os.makedirs(TEMP_DIR, exist_ok=True)
+
+def cleanup_old_temp_files():
+    """Menghapus file sementara di temp_results yang usianya lebih dari 2 jam."""
+    try:
+        now = time.time()
+        for filename in os.listdir(TEMP_DIR):
+            file_path = os.path.join(TEMP_DIR, filename)
+            # Periksa jika file berumur lebih dari 7200 detik (2 jam)
+            if os.path.isfile(file_path) and (now - os.path.getmtime(file_path)) > 7200:
+                os.remove(file_path)
+                print(f"[CLEANUP] Menghapus file kadaluarsa: {filename}")
+    except Exception as e:
+        print(f"[CLEANUP ERROR] Gagal membersihkan berkas lama: {str(e)}")
 
 def load_models():
     """Memuat semua model yang sudah ditraining."""
@@ -253,6 +267,8 @@ def api_predict_csv():
     Request: multipart/form-data dengan file CSV
     Response: distribusi sentimen + rekomendasi batch
     """
+    cleanup_old_temp_files()
+    
     if nb_model is None:
         return jsonify({"error": "Model belum dilatih. Jalankan train_model.py"}), 500
 
